@@ -30,13 +30,17 @@ def channel(x):
 
 def random_binning_encoder(d):
     '''
-    d = input word to be encoded
+    d = numpy array of integers (0s and 1s), the input word to be encoded
     '''
     hamming = np.array([0b0000000,0b1000110,0b0100101,0b0010011,0b0001111,0b1100011,0b1010101,0b1001001,0b0110110,0b0101010,0b0011100,0b1110000,0b1101100,0b1011010,0b0111001,0b1111111])
+    
+    #get prefix from input array
+    prefix = "0"
+    for i in range(np.shape(d)[0]):
+        prefix += "{0:00b}".format(d[i])
 
-    #generate Tx|u(d)
+    #---------------------------------generate Tx|u(d)
 
-    prefix = "{0:04b}".format(d)
     codeword = 0 #binary codeword
     
     #look for matches between hamming code words and the prefix
@@ -46,6 +50,7 @@ def random_binning_encoder(d):
         
         #chechk if prefix matches with the word
         if binary.startswith(prefix):
+            #need an int in order to quickly do the complement later
             codeword = int(binary, base = 2)
             
     #choose whether to return the codeword or the binary complement
