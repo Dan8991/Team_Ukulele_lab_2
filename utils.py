@@ -52,6 +52,10 @@ def random_binning_encoder(d):
     i = randrange(2)
         
     if i:
-        return codeword & 0b1111111
+        bin_string = "{0:07b}".format(codeword)
+        #return array of numbers
+        return np.array(list(bin_string), dtype=int)
     else:
-        return ~codeword & 0b1111111
+        bin_string = "{0:07b}".format(~codeword & 0b1111111)
+        #return array of numbers
+        return np.array(list(bin_string), dtype=int)
