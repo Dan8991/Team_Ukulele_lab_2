@@ -1,4 +1,5 @@
 from scipy.special import binom
+from random import randrange 
 import numpy as np
 
 def uniform_error_channel(n_max, x):
@@ -27,3 +28,30 @@ def channel(x):
 
     return uniform_error_channel(1, x), uniform_error_channel(3, x)
 
+def random_binning_encoder(d):
+    '''
+    d = input word to be encoded
+    '''
+    hamming = np.array([0b0000000,0b1000110,0b0100101,0b0010011,0b0001111,0b1100011,0b1010101,0b1001001,0b0110110,0b0101010,0b0011100,0b1110000,0b1101100,0b1011010,0b0111001,0b1111111])
+
+    #generate Tx|u(d)
+
+    prefix = "{0:04b}".format(d)
+    codeword = 0 #binary codeword
+    
+    #look for matches between hamming code words and the prefix
+    for i in range(np.shape(hamming)[0]):
+        #obtain string representation of the binary hamming[i]
+        binary = "{0:07b}".format(hamming[i]) 
+        
+        #chechk if prefix matches with the word
+        if binary.startswith(prefix):
+            codeword = int(binary, base = 2)
+            
+    #choose whether to return the codeword or the binary complement
+    i = randrange(2)
+        
+    if i:
+        return codeword & 0b1111111
+    else:
+        return ~codeword & 0b1111111
