@@ -73,3 +73,24 @@ def random_binning_encoder(d):
         bin_string = "{0:07b}".format(~codeword & 0b1111111)
         #return array of numbers
         return np.array(list(bin_string), dtype=int)
+        
+def random_binning_decoder(y):
+	X = ['0000000', '1000110', '0100101', '0010011', '0001111', '1100011', '1010101', '1001001', '0110110', '0101010', '0011100', '1110000', '1101100', '1011010', '0111001', '1111111']
+	X = [np.asarray(list(a), dtype=int) for a in X]
+	min_distance = 7
+	min_a = 0 
+	for a in X:
+		h = hamming_distance(a, y)
+		if h < min_distance:
+			min_distance = h
+			min_a = a
+	x = min_a[1:4]
+	if min_a[0] == 1:
+		x = np.asarray([1-i for i in x])
+	return x
+	
+def encoder_eavesdropper(d):
+	x = random_binning_encoder(d)
+	x = "{0:07b}".format(x)
+	x = np.asarray(list(x), dtype = int)
+	return uniform_error_channel(3, x)
