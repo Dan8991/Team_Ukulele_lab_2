@@ -11,7 +11,7 @@ x = np.zeros(7)
 z = []
 y = []
 
-for i in tqdm(range(10**2)):
+for i in tqdm(range(10**6)):
     legitimate, eve = channel(x)
     y.append(legitimate)
     z.append(eve)
@@ -21,14 +21,23 @@ z_unique, z_counts = np.unique(z, return_counts=True, axis = 0)
 combinations = np.concatenate([y, z], axis = 1)
 comb_unique, comb_counts = np.unique(combinations, return_counts=True, axis = 0)
 
-'''
-fig, axs = plt.subplots(1, 3)
-axs[0].bar(np.arange(len(y_counts)), y_counts)
-axs[1].bar(np.arange(len(z_counts)), z_counts)
-axs[2].bar(np.arange(len(comb_counts)), comb_counts)
+p_y = y_counts/np.sum(y_counts)
+p_z = z_counts/np.sum(z_counts)
+p_yz = comb_counts/np.sum(comb_counts)
+
+fig, axs = plt.subplots(1, 3, figsize=(40, 7))
+axs[0].scatter(np.arange(len(y_counts)), p_y)
+axs[1].scatter(np.arange(len(z_counts)), p_z)
+axs[2].scatter(np.arange(len(comb_counts)), p_yz)
+axs[0].set_ylabel("P(y)")
+axs[1].set_ylabel("P(z)")
+axs[2].set_ylabel("P(y, z)")
+axs[0].set_ylim([0, 0.2])
+axs[1].set_ylim([0, 0.02])
+axs[2].set_ylim([0, 0.004])
+
 plt.show()
-plt.savefig("distributions.png")
-''' 
+fig.savefig("distributions.png")
 
 print("\nTASK 4\n")
 
