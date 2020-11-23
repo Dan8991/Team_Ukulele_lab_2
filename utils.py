@@ -105,3 +105,32 @@ def np_to_number(x):
 
     power = np.fromfunction(lambda i, j: 2**(len(x)-1-j), (1, len(x)))[0]
     return int(np.dot(power, x))
+
+def compute_joint(conditional_z, p_u):
+    return conditional_z * p_u.reshape((-1, 1))
+
+def compute_marginal_z(joint_prob, axis = 0):
+    #with axis = 0 we compute the marginal over z
+    return np.sum(joint_prob, axis = axis)
+
+
+
+def compute_mutual(joint_prob, marginal_u, marginal_z):
+    '''
+    joint labels = int representation of the concatenation of u and z
+    joint probability = probability of [u, z]
+    marginal_u = P(u) where index i contains the probability of the int representation of u
+    marginal_z = P(z) where index i contains the probability of the int representation of z
+    '''
+
+    information = np.zeros((2 ** 3, 2 ** 7))
+
+    for i in range(2**3):
+        for j in range(2**7):
+            log_arg = joint_prob[i, j] / marginal_u[i] / marginal_z[j]
+            information[i, j] = joint_prob[i, j]*np.log2(log_arg)
+
+    return np.sum(information)
+
+
+

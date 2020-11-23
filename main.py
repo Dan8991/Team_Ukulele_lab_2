@@ -1,8 +1,10 @@
 import numpy as np
 from utils import channel, binary_channel, hamming_distance, get_distribution, np_to_number
+from utils import compute_mutual, compute_joint, compute_marginal_z
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from itertools import product
+from mpl_toolkits.mplot3d import Axes3D
 
 print("TASK 1\n")
 x = np.zeros(7)
@@ -30,38 +32,52 @@ plt.savefig("distributions.png")
 
 print("\nTASK 4\n")
 
-plt.figure()
-joint_labels = [] 
-joint_counts = []
-marginal_z = np.zeros((2**7))
-marginal_u = 1/8
-information = np.zeros((2**10))
+#here I am supposing that the input messages are uniformly distributed
+marginal_u = np.ones(8) / 8
 conditional = np.zeros((8, 2**7))
 
 for i, u in tqdm(enumerate(product([0, 1], [0, 1], [0, 1]))):
     u = np.array(u)
-    unique, counts = get_distribution(u,10**4)
-
-    #concatenating in order to compute the joint distribution
-    u_concat = np.repeat(u.reshape((1, len(u))), len(unique),axis = 0)
-    joint = np.concatenate([u_concat, unique], axis = 1)
-    joint = [np_to_number(j) for j in joint]
-    joint_labels.append(joint)
-    joint_counts.append(counts)
+    #keep this high enough so we are sure that there is one 
+    #sample for each of the possible z
+    unique, counts = get_distribution(u, 10 ** 4)
 
     cond_prob = counts / np.sum(counts)
     uniques = [np_to_number(uni) for uni in unique]
+    conditional[i, uniques] = cond_prob
 
-    for j, unique in enumerate(uniques):
-        marginal_z[unique] += counts[j]
+joint = compute_joint(conditional, marginal_u)
+marginal_z = compute_marginal_z(joint)
 
-    # plt.bar(uniques, cond_prob, label=np_to_number(u))
-    conditional[i, :] = cond_prob
-
-print(np.min(conditional), np.max(conditional))
-plt.imshow(conditional)
-plt.legend()
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+X = np.arange(2 ** 3)
+Y = np.arange(2 ** 7)
+X, Y = np.meshgrid(X, Y)
+ax.plot_surface(
+        X,
+        Y, 
+        conditional.T,
+        cmap="coolwarm",
+        linewidth=0,
+        antialiased=False,
+        vmin = 0,
+        vmax = 1
+        )
+ax.set_zlim(0, 0.04)
 plt.show()
+
+print(f"sum of the conditional probabilities: {np.sum(conditional, axis = 1)}")
+print(f"sum of the marginal probability for z: {np.sum(marginal_z)}")
+print(f"sum of the joint probabilities: {np.sum(joint)}")
+
+mutual_information = compute_mutual(
+        joint,
+        marginal_u,
+        marginal_z
+)
+
+print(f"Mutual Information = {mutual_information}")
 
 print("\nTASK 5\n")
 epsilon = 0.8
