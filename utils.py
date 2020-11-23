@@ -28,7 +28,7 @@ def channel(x):
 
     return uniform_error_channel(1, x), uniform_error_channel(3, x)
 
-def binary_channel(x, eps):
+def binary_channel(eps, x):
 
     error = np.random.choice(2, size=(len(x)), p = (1 - eps, eps))
 
@@ -92,6 +92,31 @@ def random_binning_decoder(y):
 def encoder_eavesdropper(d):
 	x = random_binning_encoder(d)
 	return uniform_error_channel(3, x)
+
+def verify_encoder_decoder(n_iter = 10**4):
+	print('Verify encoder + decoder')
+	errors = 0
+	for _ in range(n_iter):
+		d = np.random.randint(2, size=3)
+		x = random_binning_encoder(d)
+		decoded = random_binning_decoder(x)
+		if np.sum(np.abs(d-decoded)) != 0:
+			error += 1
+
+	print('Error rate: ' + str(errors/n_iter))
+	
+	
+def verify_encoder_channel_decoder(channel, param, n_iter=10**4):
+	errors = 0
+	for _ in range(n_iter):
+		d = np.random.randint(2, size=3)
+		x = random_binning_encoder(d)
+		y = channel(param, x)
+		decoded = random_binning_decoder(y)
+		if np.sum(np.abs(d-decoded)) != 0:
+			errors += 1
+	print('Error rate: ' + str(errors/n_iter))
+
 
 def get_distribution(u, n_tests = 10**4):
     

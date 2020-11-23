@@ -1,6 +1,7 @@
 import numpy as np
 from utils import channel, binary_channel, hamming_distance, get_distribution, np_to_number
-from utils import compute_mutual, compute_joint, compute_marginal_z
+from utils import compute_mutual, compute_joint, compute_marginal_z, uniform_error_channel
+from utils import verify_encoder_decoder, verify_encoder_channel_decoder
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from itertools import product
@@ -11,7 +12,7 @@ x = np.zeros(7)
 z = []
 y = []
 
-for i in tqdm(range(10**6)):
+for i in tqdm(range(10**4)):
     legitimate, eve = channel(x)
     y.append(legitimate)
     z.append(eve)
@@ -38,6 +39,15 @@ axs[2].set_ylim([0, 0.004])
 
 plt.show()
 fig.savefig("distributions.png")
+
+print("\nTASKS 2 and 3\n")
+# verify that encoder + decoder makes no error
+
+verify_encoder_decoder()
+
+# verify that encoder + legitimate channel + decoder makes no error
+
+verify_encoder_channel_decoder(uniform_error_channel, 1)
 
 print("\nTASK 4\n")
 
@@ -92,6 +102,6 @@ print("\nTASK 5\n")
 epsilon = 0.8
 n_bits = 10**4
 x = np.random.randint(2, size=n_bits)
-y = binary_channel(x, epsilon)
+y = binary_channel(epsilon, x)
 print(f"epsilon: {epsilon}, estimated = {hamming_distance(x, y)/n_bits}")
 
