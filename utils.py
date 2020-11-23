@@ -91,6 +91,17 @@ def random_binning_decoder(y):
 	
 def encoder_eavesdropper(d):
 	x = random_binning_encoder(d)
-	x = "{0:07b}".format(x)
-	x = np.asarray(list(x), dtype = int)
 	return uniform_error_channel(3, x)
+
+def get_distribution(u, n_tests = 10**4):
+    
+    z = []
+    for _ in range(n_tests):
+        z.append(encoder_eavesdropper(u))
+
+    return np.unique(z, axis = 0, return_counts=True)
+
+def np_to_number(x):
+
+    power = np.fromfunction(lambda i, j: 2**(len(x)-1-j), (1, len(x)))[0]
+    return int(np.dot(power, x))
