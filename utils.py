@@ -28,6 +28,15 @@ def channel(x):
 
     return uniform_error_channel(1, x), uniform_error_channel(3, x)
 
+def binary_channel(x, eps):
+
+    error = np.random.choice(2, size=(len(x)), p = (1 - eps, eps))
+
+    return (x + error) % 2
+
+def hamming_distance(x, y):
+    return np.sum(np.abs(x-y))
+
 def random_binning_encoder(d):
     '''
     d = numpy array of integers (0s and 1s), the input word to be encoded
