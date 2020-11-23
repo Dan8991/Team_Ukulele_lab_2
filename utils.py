@@ -73,3 +73,64 @@ def random_binning_encoder(d):
         bin_string = "{0:07b}".format(~codeword & 0b1111111)
         #return array of numbers
         return np.array(list(bin_string), dtype=int)
+        
+def random_binning_decoder(y):
+	X = ['0000000', '1000110', '0100101', '0010011', '0001111', '1100011', '1010101', '1001001', '0110110', '0101010', '0011100', '1110000', '1101100', '1011010', '0111001', '1111111']
+	X = [np.asarray(list(a), dtype=int) for a in X]
+	min_distance = 7
+	min_a = 0 
+	for a in X:
+		h = hamming_distance(a, y)
+		if h < min_distance:
+			min_distance = h
+			min_a = a
+	x = min_a[1:4]
+	if min_a[0] == 1:
+		x = np.asarray([1-i for i in x])
+	return x
+	
+def encoder_eavesdropper(d):
+	x = random_binning_encoder(d)
+	return uniform_error_channel(3, x)
+
+def get_distribution(u, n_tests = 10**4):
+    
+    z = []
+    for _ in range(n_tests):
+        z.append(encoder_eavesdropper(u))
+
+    return np.unique(z, axis = 0, return_counts=True)
+
+def np_to_number(x):
+
+    power = np.fromfunction(lambda i, j: 2**(len(x)-1-j), (1, len(x)))[0]
+    return int(np.dot(power, x))
+
+def compute_joint(conditional_z, p_u):
+    return conditional_z * p_u.reshape((-1, 1))
+
+def compute_marginal_z(joint_prob, axis = 0):
+    #with axis = 0 we compute the marginal over z
+    return np.sum(joint_prob, axis = axis)
+
+
+
+def compute_mutual(joint_prob, marginal_u, marginal_z):
+    '''
+    joint labels = int representation of the concatenation of u and z
+    joint probability = probability of [u, z]
+    marginal_u = P(u) where index i contains the probability of the int representation of u
+    marginal_z = P(z) where index i contains the probability of the int representation of z
+    '''
+
+    information = np.zeros((2 ** 3, 2 ** 7))
+
+    for i in range(2**3):
+        for j in range(2**7):
+            log_arg = joint_prob[i, j] / marginal_u[i] / marginal_z[j]
+            information[i, j] = joint_prob[i, j]*np.log2(log_arg)
+
+    return np.sum(information)
+
+
+
