@@ -1,4 +1,5 @@
 from scipy.special import binom
+from random import randrange 
 import numpy as np
 
 def uniform_error_channel(n_max, x):
@@ -36,3 +37,39 @@ def binary_channel(x, eps):
 def hamming_distance(x, y):
     return np.sum(np.abs(x-y))
 
+def random_binning_encoder(d):
+    '''
+    d = numpy array of integers (0s and 1s), the input word to be encoded
+    '''
+    hamming = np.array([0b0000000,0b1000110,0b0100101,0b0010011,0b0001111,0b1100011,0b1010101,0b1001001,0b0110110,0b0101010,0b0011100,0b1110000,0b1101100,0b1011010,0b0111001,0b1111111])
+    
+    #get prefix from input array
+    prefix = "0"
+    for i in range(np.shape(d)[0]):
+        prefix += "{0:00b}".format(d[i])
+
+    #---------------------------------generate Tx|u(d)
+
+    codeword = 0 #binary codeword
+    
+    #look for matches between hamming code words and the prefix
+    for i in range(np.shape(hamming)[0]):
+        #obtain string representation of the binary hamming[i]
+        binary = "{0:07b}".format(hamming[i]) 
+        
+        #chechk if prefix matches with the word
+        if binary.startswith(prefix):
+            #need an int in order to quickly do the complement later
+            codeword = int(binary, base = 2)
+            
+    #choose whether to return the codeword or the binary complement
+    i = randrange(2)
+        
+    if i:
+        bin_string = "{0:07b}".format(codeword)
+        #return array of numbers
+        return np.array(list(bin_string), dtype=int)
+    else:
+        bin_string = "{0:07b}".format(~codeword & 0b1111111)
+        #return array of numbers
+        return np.array(list(bin_string), dtype=int)
