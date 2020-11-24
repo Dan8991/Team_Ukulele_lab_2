@@ -28,7 +28,7 @@ def channel(x):
 
     return uniform_error_channel(1, x), uniform_error_channel(3, x)
 
-def binary_channel(x, eps):
+def binary_channel(eps, x):
 
     error = np.random.choice(2, size=(len(x)), p = (1 - eps, eps))
 
@@ -75,29 +75,64 @@ def random_binning_encoder(d):
         return np.array(list(bin_string), dtype=int)
         
 def random_binning_decoder(y):
-	X = ['0000000', '1000110', '0100101', '0010011', '0001111', '1100011', '1010101', '1001001', '0110110', '0101010', '0011100', '1110000', '1101100', '1011010', '0111001', '1111111']
-	X = [np.asarray(list(a), dtype=int) for a in X]
-	min_distance = 7
-	min_a = 0 
-	for a in X:
-		h = hamming_distance(a, y)
-		if h < min_distance:
-			min_distance = h
-			min_a = a
-	x = min_a[1:4]
-	if min_a[0] == 1:
-		x = np.asarray([1-i for i in x])
-	return x
-	
+    X = ['0000000', '1000110', '0100101', '0010011', '0001111', '1100011', '1010101', '1001001', '0110110', '0101010', '0011100', '1110000', '1101100', '1011010', '0111001', '1111111']
+    X = [np.asarray(list(a), dtype=int) for a in X]
+    min_distance = 7
+    min_a = 0 
+    for a in X:
+        h = hamming_distance(a, y)
+        if h < min_distance:
+            min_distance = h
+            min_a = a
+    x = min_a[1:4]
+    if min_a[0] == 1:
+        x = np.asarray([1-i for i in x])
+    return x
+    
 def encoder_eavesdropper(d):
-	x = random_binning_encoder(d)
-	return uniform_error_channel(3, x)
+    x = random_binning_encoder(d)
+    return uniform_error_channel(3, x)
+
+def verify_encoder_decoder(n_iter = 10**4):
+    print('Verify encoder + decoder')
+    errors = 0
+    for _ in range(n_iter):
+        d = np.random.randint(2, size=3)
+        x = random_binning_encoder(d)
+        decoded = random_binning_decoder(x)
+        if np.sum(np.abs(d-decoded)) != 0:
+            error += 1
+
+    print('Error rate: ' + str(errors/n_iter))
+    
+    
+def verify_encoder_channel_decoder(channel, param, n_iter=10**3, verbose = True):
+    errors = 0
+    for _ in range(n_iter):
+        d = np.random.randint(2, size=3)
+        x = random_binning_encoder(d)
+        y = channel(param, x)
+        decoded = random_binning_decoder(y)
+        if np.sum(np.abs(d-decoded)) != 0:
+            errors += 1
+    if verbose:
+        print('Error rate: ' + str(errors/n_iter))
+    return errors/n_iter
+
 
 def get_distribution(u, n_tests = 10**4):
     
     z = []
     for _ in range(n_tests):
         z.append(encoder_eavesdropper(u))
+
+    return np.unique(z, axis = 0, return_counts=True)
+
+def get_many_z_bsc(u, eps, n_tests=10**4):
+
+    z = []
+    for _ in range(n_tests):
+        z.append(binary_channel(eps, random_binning_encoder(u)))
 
     return np.unique(z, axis = 0, return_counts=True)
 
@@ -127,8 +162,9 @@ def compute_mutual(joint_prob, marginal_u, marginal_z):
 
     for i in range(2**3):
         for j in range(2**7):
-            log_arg = joint_prob[i, j] / marginal_u[i] / marginal_z[j]
-            information[i, j] = joint_prob[i, j]*np.log2(log_arg)
+            if np.abs(joint_prob[i, j]) > 10**-20: 
+                log_arg = joint_prob[i, j] / marginal_u[i] / marginal_z[j]
+                information[i, j] = joint_prob[i, j]*np.log2(log_arg)
 
     return np.sum(information)
 
