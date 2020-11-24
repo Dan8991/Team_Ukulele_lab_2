@@ -13,7 +13,7 @@ x = np.array([1, 0, 0, 1, 0, 0, 0])
 z = []
 y = []
 
-for i in tqdm(range(10**4)):
+for i in tqdm(range(10**6)):
     legitimate, eve = channel(x)
     y.append(legitimate)
     z.append(eve)
@@ -52,7 +52,7 @@ print("\nTASKS 2 and 3\n")
 verify_encoder_decoder()
 
 # verify that encoder + legitimate channel + decoder makes no error
-
+print("verify the concatenation of encoder, uniform channel and decoder")
 verify_encoder_channel_decoder(uniform_error_channel, 1)
 
 print("\nTASK 4\n")
@@ -65,7 +65,7 @@ for i, u in tqdm(enumerate(product([0, 1], [0, 1], [0, 1]))):
     u = np.array(u)
     #keep this high enough so we are sure that there is one 
     #sample for each of the possible z
-    unique, counts = get_distribution(u, 10 ** 3)
+    unique, counts = get_distribution(u, 10 ** 5)
 
     cond_prob = counts / np.sum(counts)
     uniques = [np_to_number(uni) for uni in unique]
@@ -119,7 +119,7 @@ print("\nTASK 6\n")
 eps = [10**-3, 10**-2, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1-10**-2, 1-10**-3]
 errors = []
 for i in tqdm(eps):
-    errors.append(verify_encoder_channel_decoder(binary_channel, i,n_iter = 10**2, verbose=False))
+    errors.append(verify_encoder_channel_decoder(binary_channel, i,n_iter = 10**5, verbose=False))
 	
 plt.plot(eps, errors, 'bo', eps, errors, 'r--')
 plt.yscale('log')
@@ -138,7 +138,7 @@ for e in tqdm(eps):
         u = np.array(u)
         #keep this high enough so we are sure that there is one 
         #sample for each of the possible z
-        unique, counts = get_many_z_bsc(u, e, 10 ** 3)
+        unique, counts = get_many_z_bsc(u, e, 10 ** 4)
 
         cond_prob = counts / np.sum(counts)
         uniques = [np_to_number(uni) for uni in unique]
