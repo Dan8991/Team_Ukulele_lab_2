@@ -1,4 +1,5 @@
 import numpy as np
+from math import sqrt
 from utils import channel, binary_channel, hamming_distance, get_distribution, np_to_number
 from utils import compute_mutual, compute_joint, compute_marginal_z, uniform_error_channel
 from utils import verify_encoder_decoder, verify_encoder_channel_decoder, get_many_z_bsc
@@ -163,3 +164,43 @@ plt.ylabel('mutual information between u and z')
 plt.show()
 
 
+# compute an upper bound to the mechanism security 
+# in terms of distinguishability from the ideal counterpart
+
+bounds = []
+
+#compute bounds for each (eps, delta) pair
+for epsilon in range(len(eps)):
+    #form an array of bounds for each epsilon
+    results = []
+    
+    for delta in range(len(eps)):
+        bound = errors[epsilon] + 1/2*(sqrt(mutual_information_eps[delta]))
+        results.append(bound) 
+    
+    results = np.asarray(results)    
+    bounds.append(results)
+
+bounds = np.asarray(bounds)
+
+#plot the results
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+X = np.asarray(eps)
+Y = np.asarray(eps)
+X, Y = np.meshgrid(X, Y)
+ax.plot_surface(
+        X,
+        Y, 
+        bounds,
+        cmap="coolwarm",
+        linewidth=0,
+        antialiased=True,
+        vmin = 0,
+        vmax = 1
+        )
+ax.set_zlim(0, 2)
+ax.set_xlabel("delta")
+ax.set_ylabel("epsilon")
+ax.set_zlabel("bound")
+plt.show()
